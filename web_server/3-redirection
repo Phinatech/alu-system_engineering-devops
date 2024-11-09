@@ -1,47 +1,16 @@
 #!/usr/bin/env bash
-# Script to install Nginx and configure it to redirect /redirect_me to another page.
+# Installs Nginx with the following configurations:
+#+    Listens on port 80.
+#+    Returns a page containing "Holberton School" when queried
+#++    at the root with a curl GET request.
 
-# Update package index
-sudo apt update -y
+sudo apt-get update 
+sudo apt-get install -y nginx 
 
-# Install Nginx
-sudo apt install nginx -y
+echo "Holberton School" | sudo tee /var/www/html/index.html
 
-# Remove the default server block if it exists
-sudo rm -f /etc/nginx/sites-enabled/default
+string_for_replacement="server_name _;\n\trewrite ^\/redirect_me https:\/\/www.youtube.com\/watch?v=QH2-TGUlwu4 permanent;"
 
-# Create the new server block configuration
-new_config="server {
-    listen 80 default_server;
-    listen [::]:80 default_server;
+sudo sed -i "s/server_name _;/$string_for_replacement/" /etc/nginx/sites-available/default
 
-    root /var/www/html;  # Correct document root
-    index index.html;  # Default index file
-
-    server_name _;  # Respond to any server name
-
-    location / {
-        try_files \$uri \$uri/ =404;  # Serve files or return 404
-    }
-
-    location /redirect_me {
-        return 301 https://www.youtube.com/watch?v=QH2-TGUlwu4;  # Permanent redirect
-    }
-}
-"
-
-# Write the new configuration to the default site
-echo "$new_config" | sudo tee /etc/nginx/sites-available/default > /dev/null
-
-# Create the document root directory and the index.html file
-sudo mkdir -p /var/www/html
-echo "Holberton School" | sudo tee /var/www/html/index.html > /dev/null
-
-# Enable the new site configuration
-sudo ln -s /etc/nginx/sites-available/default /etc/nginx/sites-enabled/
-
-# Test Nginx configuration
-sudo nginx -t
-
-# Restart Nginx
 sudo service nginx restart
