@@ -1,12 +1,47 @@
 #!/usr/bin/env bash
-# Script that configures a new Ubuntu machine to respect above requirements
+# Script to install Nginx and configure it to redirect /redirect_me to another page.
 
-sudo apt-get update
-sudo apt-get install -y nginx
-sudo ufw allow 'Nginx HTTP'
+# Update package index
+sudo apt update -y
 
-sh -c 'echo "Holberton School" >  /var/www/html/index.html'
-string_for_replacement="server_name _;\n\trewrite ^\/redirect_me https:\/\/www.blog.ehoneahobed.com permanent;"
-sudo sed -i "s/server_name _;/$string_for_replacement/" /etc/nginx/sites-enabled/default
+# Install Nginx
+sudo apt install nginx -y
 
+# Remove the default server block if it exists
+sudo rm -f /etc/nginx/sites-enabled/default
+
+# Create the new server block configuration
+new_config="server {
+    listen 80 default_server;
+    listen [::]:80 default_server;
+
+    root /var/www/html;  # Correct document root
+    index index.html;  # Default index file
+
+    server_name _;  # Respond to any server name
+
+    location / {
+        try_files \$uri \$uri/ =404;  # Serve files or return 404
+    }
+
+    location /redirect_me {
+        return 301 https://www.youtube.com/watch?v=QH2-TGUlwu4;  # Permanent redirect
+    }
+}
+"
+
+# Write the new configuration to the default site
+echo "$new_config" | sudo tee /etc/nginx/sites-available/default > /dev/null
+
+# Create the document root directory and the index.html file
+sudo mkdir -p /var/www/html
+echo "Holberton School" | sudo tee /var/www/html/index.html > /dev/null
+
+# Enable the new site configuration
+sudo ln -s /etc/nginx/sites-available/default /etc/nginx/sites-enabled/
+
+# Test Nginx configuration
+sudo nginx -t
+
+# Restart Nginx
 sudo service nginx restart
