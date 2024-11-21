@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-ln -sf /etc/nginx/sites-available/default /etc/nginx/sites-enabled/default
+#nginx is stopped
+ln -sf /etc/nginx/sites-available/default > /etc/nginx/sites-enabled/default
 service nginx restart
 service nginx stop
-
