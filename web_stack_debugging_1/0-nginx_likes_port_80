@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
-# nginx like port 80
+# script that restores the default server port
 
-apt-get update -y
-apt-get install -y nginx
-sudo service nginx enable
+sudo ln -sf /etc/nginx/sites-available/default /etc/nginx/sites-enabled/default
 sudo service nginx start
